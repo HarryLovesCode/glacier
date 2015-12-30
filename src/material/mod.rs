@@ -33,7 +33,7 @@ pub fn radiance(ray: Ray, depth: u64, spheres: &[Sphere]) -> Color {
     let max_refl = base.r.max(base.g.max(base.b));
     let new_norm = if normal.dot(ray.dir) < 0.0 { normal } else { normal * -1.0 };
 
-    if depth > 5 {
+    if depth > 5 && depth < 100 {
         if random::<f64>() < max_refl {
             base = base / max_refl;
         } else {

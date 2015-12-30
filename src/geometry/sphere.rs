@@ -10,8 +10,8 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(pos: Point, mat: Material, rad: f64) -> Sphere {
-        Sphere { pos: pos, mat: mat, rad2: rad * rad }
+    pub fn new(rad: f64, pos: Point, mat: Material) -> Sphere {
+        Sphere { rad2: rad * rad, pos: pos, mat: mat }
     }
 }
 
