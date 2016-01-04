@@ -1,5 +1,3 @@
-#![feature(step_by)]
-
 extern crate image;
 extern crate rand;
 
@@ -12,7 +10,7 @@ use material::*;
 use math::*;
 use rand::random;
 use std::path::Path;
-use std::sync::{Arc, mpsc, Mutex};
+use std::sync::mpsc;
 use std::thread;
 
 const NUM_THREADS: usize = 4;
@@ -22,13 +20,13 @@ fn main() {
     let h = 512;
     let w_f = w as f64;
     let h_f = h as f64;
-    let samps = 8;
-
+    let samps = 20;
+    let chunk_h = h / NUM_THREADS;
     let cam = Ray::new(Point::new(50.0, 52.0, 295.6), Vector::new(0.0, -0.042612, -1.0).norm());
     let cx = Vector::new(w as f64 * 0.5135 / h as f64, 0.0, 0.0);
     let cy = cx.cross(cam.dir).norm() * 0.5135;
     let (tx, rx) = mpsc::channel();
-    let mut data = Arc::new(Mutex::new(vec![0; 3 * w * h]));
+    let mut data = vec![0; 3 * w * h];
 
     let materials = [
         Material::new(Color::zero(),    Color::new(0.75, 0.25, 0.25), MaterialType::DIFFUSE),
@@ -52,14 +50,15 @@ fn main() {
         Sphere::new(600.0,     Point::new(50.0, 681.33, 81.6),    materials[6]),
     ];
 
-    for y in (0..h).step_by(NUM_THREADS) {
-        for t in 0..NUM_THREADS {
-            let (data, tx) = (data.clone(), tx.clone());
+    for t in 0..NUM_THREADS {
+        let tx = tx.clone();
 
-            thread::spawn(move || {
-                let y = y + t as usize;
+        thread::spawn(move || {
+            let mut data = Vec::with_capacity(3 * w * chunk_h);
+            let bot = chunk_h * t;
+            let top = chunk_h * (t + 1);
+            for y in bot..top {
                 let y_f = y as f64;
-                let mut data = data.lock().unwrap();
 
                 for x in 0..w {
                     let x_f = x as f64;
@@ -83,23 +82,21 @@ fn main() {
                     }
 
                     accum = accum * (0.25 / samps as f64);
-                    let pix_loc = (h - y - 1) * w * 3 + x * 3;
-                    data[pix_loc + 0] = to_int(accum.r);
-                    data[pix_loc + 1] = to_int(accum.g);
-                    data[pix_loc + 2] = to_int(accum.b);
+                    data.push(to_int(accum.r));
+                    data.push(to_int(accum.g));
+                    data.push(to_int(accum.b));
                 }
+            }
 
-                let _ = tx.send(());
-            });
-        }
+            let _ = tx.send(data);
+        });
+    }
 
-        for _ in 0..NUM_THREADS {
-            let _ = rx.recv();
-        }
+    for _ in 0..NUM_THREADS {
+        data.append(&mut rx.recv().unwrap());
     }
 
     let w = w as u32;
     let h = h as u32;
-    let data = data.lock().unwrap();
     let _ = image::save_buffer(&Path::new("smallpt.png"), &data, w, h, image::RGB(8));
 }
