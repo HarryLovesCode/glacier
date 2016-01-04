@@ -1,5 +1,4 @@
 use material::{Color, MaterialType};
-use math::{Point, Ray};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Material {
