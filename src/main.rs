@@ -26,7 +26,7 @@ fn main() {
     let cx = Vector::new(w as f64 * 0.5135 / h as f64, 0.0, 0.0);
     let cy = cx.cross(cam.dir).norm() * 0.5135;
     let (tx, rx) = mpsc::channel();
-    let mut data = vec![0; 3 * w * h];
+    let mut out = Vec::new();
 
     let materials = [
         Material::new(Color::zero(),    Color::new(0.75, 0.25, 0.25), MaterialType::DIFFUSE),
@@ -88,15 +88,21 @@ fn main() {
                 }
             }
 
-            let _ = tx.send(data);
+            let _ = tx.send((bot * w * 3, data));
         });
     }
 
     for _ in 0..NUM_THREADS {
-        data.append(&mut rx.recv().unwrap());
+        let (s_idx, data) = rx.recv().unwrap();
+
+        println!("{}", s_idx);
+
+        for (idx, val) in data.iter().enumerate() {
+            out.insert(s_idx + idx - 1, *val);
+        }
     }
 
     let w = w as u32;
     let h = h as u32;
-    let _ = image::save_buffer(&Path::new("smallpt.png"), &data, w, h, image::RGB(8));
+    let _ = image::save_buffer(&Path::new("smallpt.png"), &out, w, h, image::RGB(8));
 }
