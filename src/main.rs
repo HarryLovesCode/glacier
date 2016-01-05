@@ -20,13 +20,13 @@ fn main() {
     let h = 512;
     let w_f = w as f64;
     let h_f = h as f64;
-    let samps = 20;
+    let samps = 4;
     let chunk_h = h / NUM_THREADS;
     let cam = Ray::new(Point::new(50.0, 52.0, 295.6), Vector::new(0.0, -0.042612, -1.0).norm());
     let cx = Vector::new(w as f64 * 0.5135 / h as f64, 0.0, 0.0);
     let cy = cx.cross(cam.dir).norm() * 0.5135;
     let (tx, rx) = mpsc::channel();
-    let mut out = Vec::new();
+    let mut out = vec![0u8; 3 * w * h];
 
     let materials = [
         Material::new(Color::zero(),    Color::new(0.75, 0.25, 0.25), MaterialType::DIFFUSE),
@@ -88,17 +88,16 @@ fn main() {
                 }
             }
 
-            let _ = tx.send((bot * w * 3, data));
+            let pix_loc = (h - bot) * w * 3;
+            let _ = tx.send((pix_loc - 1, data));
         });
     }
 
     for _ in 0..NUM_THREADS {
         let (s_idx, data) = rx.recv().unwrap();
 
-        println!("{}", s_idx);
-
         for (idx, val) in data.iter().enumerate() {
-            out.insert(s_idx + idx - 1, *val);
+            out[s_idx - idx] = *val;
         }
     }
 
