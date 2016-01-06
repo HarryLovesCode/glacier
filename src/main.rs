@@ -54,7 +54,7 @@ fn main() {
         Material::new(Color::zero(),    Color::new(0.25, 0.25, 0.75), MaterialType::DIFFUSE),
         Material::new(Color::zero(),    Color::all(0.75),             MaterialType::DIFFUSE),
         Material::new(Color::zero(),    Color::zero(),                MaterialType::DIFFUSE),
-        Material::new(Color::zero(),    Color::all(0.999),            MaterialType::MIRROR),
+        Material::new(Color::zero(),    Color::all(0.999),            MaterialType::DIFFUSE),
         Material::new(Color::zero(),    Color::all(0.999),            MaterialType::GLASS),
         Material::new(Color::all(12.0), Color::zero(),                MaterialType::DIFFUSE),
     ];
@@ -96,7 +96,7 @@ fn main() {
                                 let d = cx * (((sx + 0.5 + dx) / 2.0 + x_f) / w_f - 0.5) +
                                         cy * (((sy + 0.5 + dy) / 2.0 + y_f) / h_f - 0.5) + cam.dir;
                                 let ray = Ray::new(cam.ori + d * 140.0, d.norm());
-                                accum = accum + radiance(ray, 0, &spheres);
+                                accum = accum + radiance(ray, &spheres);
                             }
                         }
                     }
