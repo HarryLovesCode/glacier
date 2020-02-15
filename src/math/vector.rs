@@ -1,5 +1,6 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
+/// Vector is a standard vector in 3 dimensional space
 #[derive(Clone, Copy, Debug)]
 pub struct Vector {
     pub x: f64,
@@ -8,18 +9,27 @@ pub struct Vector {
 }
 
 impl Vector {
+    /// Initialize Vector and set values for { x, y, z } components
     pub fn new(x: f64, y: f64, z: f64) -> Vector {
         Vector { x: x, y: y, z: z }
     }
 
-    pub fn all(v: f64) -> Vector {
-        Vector { x: v, y: v, z: v }
+    /// Compute length of Vector
+    pub fn len(self) -> f64 {
+        self.len_sqr().sqrt()
     }
 
-    pub fn zero() -> Vector {
-        Vector { x: 0.0, y: 0.0, z: 0.0 }
+    /// Compute length of Vector squared
+    pub fn len_sqr(self) -> f64 {
+        self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    /// Compute normalized copy of this
+    pub fn norm(self) -> Vector {
+        self / self.len()
+    }
+
+    /// Compute vector cross product of two vectors
     pub fn cross(self, ov: Vector) -> Vector {
         Vector {
             x: self.y * ov.z - self.z * ov.y,
@@ -28,31 +38,21 @@ impl Vector {
         }
     }
 
+    /// Compute dot product of two vectors
     pub fn dot(self, ov: Vector) -> f64 {
         self.x * ov.x + self.y * ov.y + self.z * ov.z
-    }
-
-    pub fn mag(self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
-    pub fn mag2(self) -> f64 {
-        self.x * self.x + self.y * self.y + self.z * self.z
-    }
-
-    pub fn norm(self) -> Vector {
-        self / self.mag()
     }
 }
 
 impl Add for Vector {
     type Output = Vector;
 
-    fn add(self, ov: Vector) -> Vector {
+    /// Compute sum of two vectors
+    fn add(self, r: Vector) -> Vector {
         Vector {
-            x: self.x + ov.x,
-            y: self.y + ov.y,
-            z: self.z + ov.z,
+            x: self.x + r.x,
+            y: self.y + r.y,
+            z: self.z + r.z,
         }
     }
 }
@@ -60,6 +60,7 @@ impl Add for Vector {
 impl Div<f64> for Vector {
     type Output = Vector;
 
+    /// Compute this Vector scaled by 1 / k
     fn div(self, k: f64) -> Vector {
         Vector {
             x: self.x / k,
@@ -72,6 +73,7 @@ impl Div<f64> for Vector {
 impl Mul<f64> for Vector {
     type Output = Vector;
 
+    /// Compute this Vector scaled by k
     fn mul(self, k: f64) -> Vector {
         Vector {
             x: self.x * k,
@@ -81,14 +83,91 @@ impl Mul<f64> for Vector {
     }
 }
 
+impl Neg for Vector {
+    type Output = Vector;
+
+    /// Compute opposite of Vector
+    fn neg(self) -> Vector {
+        Vector {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+}
+
 impl Sub for Vector {
     type Output = Vector;
 
-    fn sub(self, ov: Vector) -> Vector {
+    /// Compute difference of two vectors
+    fn sub(self, r: Vector) -> Vector {
         Vector {
-            x: self.x - ov.x,
-            y: self.y - ov.y,
-            z: self.z - ov.z,
+            x: self.x - r.x,
+            y: self.y - r.y,
+            z: self.z - r.z,
         }
     }
+}
+
+#[test]
+fn test_add() {
+    let v0 = Vector::new(1.0, 2.0, 3.0);
+    let v1 = Vector::new(1.0, 2.0, 3.0);
+    let s = v0 + v1;
+
+    assert!(s.x == 2.0);
+    assert!(s.y == 4.0);
+    assert!(s.z == 6.0);
+}
+
+#[test]
+fn test_div() {
+    let v = Vector::new(2.0, 4.0, 6.0);
+    let q = v / 2.0;
+
+    assert!(q.x == 1.0);
+    assert!(q.y == 2.0);
+    assert!(q.z == 3.0);
+}
+
+#[test]
+fn test_len() {
+    let v = Vector::new(1.0, 2.0, 3.0);
+
+    assert!(v.len() == (14.0f64).sqrt());
+}
+
+#[test]
+fn test_len_sqr() {
+    let v = Vector::new(1.0, 2.0, 3.0);
+    
+    assert!(v.len_sqr() == 1.0 + 4.0 + 9.0);
+}
+
+#[test]
+fn test_mul() {
+    let v = Vector::new(1.0, 2.0, 3.0);
+    let p = v * 2.0;
+
+    assert!(p.x == 2.0);
+    assert!(p.y == 4.0);
+    assert!(p.z == 6.0);
+}
+
+#[test]
+fn test_norm() {
+    let v = Vector::new(1.0, 2.0, 3.0);
+
+    assert!(v.norm().len().round() == 1.0);
+}
+
+#[test]
+fn test_sub() {
+    let v0 = Vector::new(3.0, 2.0, 1.0);
+    let v1 = Vector::new(1.0, 2.0, 3.0);
+    let d = v0 - v1;
+
+    assert!(d.x == 2.0);
+    assert!(d.y == 0.0);
+    assert!(d.z == -2.0);
 }

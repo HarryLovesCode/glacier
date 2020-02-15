@@ -46,7 +46,11 @@ pub fn radiance(ray: Ray, spheres: &[Sphere]) -> Color {
 
         let point = ray.at(t);
         let normal = (point - obj.pos).norm();
-        let new_norm = if normal.dot(ray.dir) < 0.0 { normal } else { normal * -1.0 };
+        let new_norm = if normal.dot(ray.dir) < 0.0 {
+            normal
+        } else {
+            normal * -1.0
+        };
 
         match obj.mat.refl {
             MaterialType::DIFFUSE => {
@@ -58,15 +62,17 @@ pub fn radiance(ray: Ray, spheres: &[Sphere]) -> Color {
                     Vector::new(0.0, 1.0, 0.0)
                 } else {
                     Vector::new(1.0, 0.0, 0.0)
-                }.cross(w).norm();
+                }
+                .cross(w)
+                .norm();
                 let v = w.cross(u);
                 let d = (u * r1.cos() * r2s + v * r1.sin() * r2s + w * (1.0 - r2).sqrt()).norm();
 
                 ray = Ray::new(point, d);
-            },
+            }
             MaterialType::MIRROR => {
                 ray = Ray::new(point, ray.dir - normal * 2.0 * normal.dot(ray.dir));
-            },
+            }
             MaterialType::GLASS => {
                 let refl_ray = Ray::new(point, ray.dir - normal * 2.0 * normal.dot(ray.dir));
                 let nc = 1.0;
@@ -81,7 +87,8 @@ pub fn radiance(ray: Ray, spheres: &[Sphere]) -> Color {
                 }
 
                 let if_into = if into { 1.0 } else { -1.0 };
-                let t_dir = (ray.dir * nnt - normal * (if_into * (ddn * nnt + cos2t.sqrt()))).norm();
+                let t_dir =
+                    (ray.dir * nnt - normal * (if_into * (ddn * nnt + cos2t.sqrt()))).norm();
                 let a = nt - nc;
                 let b = nt + nc;
                 let r0 = a * a / (b * b);
@@ -93,7 +100,6 @@ pub fn radiance(ray: Ray, spheres: &[Sphere]) -> Color {
                 let rp = re / p;
                 let tp = tr / (1.0 - p);
 
-
                 if random::<f64>() < p {
                     total_ref = total_ref * rp;
                     ray = refl_ray;
@@ -101,7 +107,7 @@ pub fn radiance(ray: Ray, spheres: &[Sphere]) -> Color {
                     total_ref = total_ref * tp;
                     ray = Ray::new(point, t_dir);
                 }
-            },
+            }
         }
 
         depth += 1;

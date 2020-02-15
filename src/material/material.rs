@@ -9,6 +9,10 @@ pub struct Material {
 
 impl Material {
     pub fn new(emis: Color, base: Color, refl: MaterialType) -> Material {
-        Material { emis: emis, base: base, refl: refl }
+        Material {
+            emis: emis,
+            base: base,
+            refl: refl,
+        }
     }
 }

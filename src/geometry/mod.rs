@@ -4,7 +4,7 @@ pub use self::sphere::Sphere;
 
 mod sphere;
 
-pub const INFINITY: f64 = 1.0e20;
+pub const INFINITY: f64 = 1.0e10;
 pub const EPSILON: f64 = 1.0e-4;
 
 pub trait Geometry {

@@ -1,4 +1,4 @@
-use geometry::{EPSILON, Geometry};
+use geometry::{Geometry, EPSILON};
 use material::Material;
 use math::{Point, Ray};
 
@@ -11,7 +11,11 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(rad: f64, pos: Point, mat: Material) -> Sphere {
-        Sphere { rad2: rad * rad, pos: pos, mat: mat }
+        Sphere {
+            rad2: rad * rad,
+            pos: pos,
+            mat: mat,
+        }
     }
 }
 
@@ -19,7 +23,7 @@ impl Geometry for Sphere {
     fn intersect(self, ray: Ray) -> Option<f64> {
         let op = self.pos - ray.ori;
         let b = op.dot(ray.dir);
-        let mut det = b * b - op.mag2() + self.rad2;
+        let mut det = b * b - op.len_sqr() + self.rad2;
 
         if det < 0.0 {
             return None;

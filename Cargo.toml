@@ -4,6 +4,6 @@ version = "0.1.0"
 authors = ["Harrison G <Harrison.Gould16@Gmail.com>"]
 
 [dependencies]
-image = "*"
-num_cpus = "*"
-rand = "*"
+image = "0.23.0"
+num_cpus = "1.12.0"
+rand = "0.7.3"
