@@ -15,7 +15,7 @@ use std::path::Path;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 
-const DEFAULT_SAMPLES: usize = 1024;
+const DEFAULT_SAMPLES: usize = 16;
 const DEFAULT_W_PIXELS: usize = 1024;
 const DEFAULT_H_PIXELS: usize = 1024;
 
@@ -33,8 +33,8 @@ fn main() {
 
     let chunk_h = h / n;
     let cam = Ray::new(
-        Point::new(50.0, 52.0, 295.6),
-        Vector::new(0.0, -0.042612, -1.0).norm(),
+        Point::new(0.0, 0.0, 50.0),
+        Vector::new(0.0, 0.0, -1.0).norm(),
     );
     let cx = Vector::new(w as f64 * 0.5135 / h as f64, 0.0, 0.0);
     let cy = cx.cross(cam.dir).norm() * 0.5135;
@@ -59,17 +59,7 @@ fn main() {
         Material::new(Color::all(12.0), Color::zero(), MaterialType::DIFFUSE),
     ];
 
-    let spheres = [
-        Sphere::new(100_000.0, Point::new(100_001.0, 40.8, 81.6), materials[0]),
-        Sphere::new(100_000.0, Point::new(-99_901.0, 40.8, 81.6), materials[1]),
-        Sphere::new(100_000.0, Point::new(50.0, 40.8, 100_000.0), materials[2]),
-        Sphere::new(100_000.0, Point::new(50.0, 40.8, -99_830.0), materials[3]),
-        Sphere::new(100_000.0, Point::new(50.0, 100_000.0, 81.6), materials[2]),
-        Sphere::new(100_000.0, Point::new(50.0, -99_918.4, 81.6), materials[2]),
-        Sphere::new(16.5, Point::new(27.0, 16.5, 47.0), materials[4]),
-        Sphere::new(16.5, Point::new(73.0, 16.5, 78.0), materials[5]),
-        Sphere::new(600.0, Point::new(50.0, 681.33, 81.6), materials[6]),
-    ];
+    let spheres = [Sphere::new(10.0, Point::new(0.0, 0.0, 0.0), materials[4])];
 
     println!("Calculating using: {} CPUs...", n);
 
@@ -106,7 +96,7 @@ fn main() {
                                 let d = cx * (((sx + 0.5 + dx) / 2.0 + x_f) / w_f - 0.5)
                                     + cy * (((sy + 0.5 + dy) / 2.0 + y_f) / h_f - 0.5)
                                     + cam.dir;
-                                let ray = Ray::new(cam.ori + d * 140.0, d.norm());
+                                let ray = Ray::new(cam.ori + d, d.norm());
                                 accum = accum + radiance(ray, &spheres);
                             }
                         }
@@ -131,5 +121,11 @@ fn main() {
     }
 
     let (w, h, data) = (w as u32, h as u32, data.lock().unwrap());
-    let _ = image::save_buffer(&Path::new("smallpt.png"), &data, w, h, image::ColorType::Rgb8);
+    let _ = image::save_buffer(
+        &Path::new("smallpt.png"),
+        &data,
+        w,
+        h,
+        image::ColorType::Rgb8,
+    );
 }
